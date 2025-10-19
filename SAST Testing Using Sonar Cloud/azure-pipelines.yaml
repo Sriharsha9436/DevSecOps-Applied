@@ -1,0 +1,38 @@
+trigger:
+  - main  # or your main branch name
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+# Step 1️⃣: Checkout source code
+- checkout: self
+  fetchDepth: 0  # Full clone required for accurate analysis
+
+# Step 2️⃣: Prepare SonarCloud Analysis
+- task: SonarCloudPrepare@3
+  inputs:
+    SonarQube: 'your service connection name'
+    organization: 'sonar organization name'
+    scannerMode: 'other'
+
+# Step 3️⃣: Build and Analyze using Maven (for Java project)
+- task: Maven@4
+  inputs:
+    azureSubscription: 'azuresubscription name'
+    mavenPomFile: 'pom.xml'
+    goals: 'clean verify sonar:sonar'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.17'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: true
+    sqMavenPluginVersionChoice: 'latest'
+
+# Step 4️⃣: Publish Quality Gate Result
+- task: SonarCloudPublish@3
+  inputs:
+    pollingTimeoutSec: '300'

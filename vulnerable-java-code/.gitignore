@@ -1,4 +1,0 @@
-target/
-*.class
-*.log
-untrusted-obj.bin
